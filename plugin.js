@@ -4,6 +4,17 @@ const chokidar = require('chokidar');
 
 const watchers = {};
 
+let root = process.cwd();
+let config = {};
+try {
+  config = require(`${process.cwd()}/nunjucks.config.js`);
+  root = config && config.root || root;
+} catch (e) {
+  if (!/^Cannot find module.+?nunjucks\.config\.js'$/.test(!e.message)) {
+    throw e;
+  }
+}
+
 function watchDependencies({
   env,
   filePath,
@@ -29,7 +40,7 @@ module.exports = function () {
       output: ['.html'],
     },
     async load({ filePath, isDev }) {
-      const env = nunjucks.configure(process.cwd());
+      const env = nunjucks.configure(root, config);
 
       if (isDev) {
         watchDependencies({
